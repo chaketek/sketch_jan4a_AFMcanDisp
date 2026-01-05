@@ -1,0 +1,23 @@
+VERSION ""
+
+
+BS_:
+
+BU_:
+
+
+BO_ 1 AFMConv1: 8 Vector__XXX
+ SG_ comp_Ga : 55|16@0- (0.1,0) [-3276.8|3276.7] "g/s" Vector__XXX
+ SG_ raw_Ga : 39|16@0- (0.1,0) [-3276.8|3276.7] "g/s" Vector__XXX
+ SG_ THA : 23|16@0- (0.1,-30) [-3306.8|3246.7] "degC" Vector__XXX
+ SG_ AFM_Freq : 7|16@0- (1,0) [-32768|32767] "Hz" Vector__XXX
+
+BO_ 2 AFMconv2: 8 Vector__XXX
+ SG_ MCUtemp : 55|16@0- (0.1,-30) [-3306.8|3246.7] "degC" Vector__XXX
+ SG_ AFMoutV : 39|16@0- (0.001,0) [-32.768|32.767] "" Vector__XXX
+ SG_ VR1_comp : 23|16@0- (0.001,0) [-32.768|32.767] "" Vector__XXX
+ SG_ THA_comp : 7|16@0- (0.001,0) [-32.768|32.767] "" Vector__XXX
+
+
+
+
