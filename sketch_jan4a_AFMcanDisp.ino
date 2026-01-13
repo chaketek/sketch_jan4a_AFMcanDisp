@@ -14,6 +14,7 @@
 #include <M5GFX.h>
 #include <driver/twai.h>
 #include "can_signals.h"
+#include "kalman_filter.h"
 
 // ============================================================================
 // 設定定数
@@ -67,6 +68,12 @@ M5Canvas canvas(&display);  // ダブルバッファ用スプライト
 
 CANSignals_t canSignals;
 
+// カルマンフィルタ (空気量信号用)
+KalmanFilter_t rawGaFilter;
+
+// フィルタ適用後の空気量 [g/s]
+float filtered_raw_ga = 0.0f;
+
 uint32_t lastUIUpdate = 0;
 bool canInitialized = false;
 
@@ -97,6 +104,10 @@ void setup() {
     
     // CAN信号構造体初期化
     initCANSignals(&canSignals);
+    
+    // カルマンフィルタ初期化 (脈動キャンセル用プリセット)
+    // Q=0.01, R=0.5 → 遅延約20-30ms、スムージング強め
+    kalmanInitPulsation(&rawGaFilter);
     
     // ディスプレイ初期化
     initDisplay();
@@ -229,8 +240,11 @@ void processCANMessages() {
         switch (rx_message.identifier) {
             case CAN_ID_AFMCONV1:
                 decodeAFMConv1(rx_message.data, &canSignals);
+                // カルマンフィルタ適用 (空気量信号)
+                filtered_raw_ga = kalmanUpdate(&rawGaFilter, canSignals.raw_ga);
 #ifdef DEBUG_CAN_OUTPUT
-                Serial.println("  -> AFMConv1 decoded");
+                Serial.printf("  -> AFMConv1 decoded (raw_ga=%.1f, filtered=%.1f)\n", 
+                              canSignals.raw_ga, filtered_raw_ga);
 #endif
                 break;
                 
@@ -290,9 +304,9 @@ void updateDisplay() {
                  AFM_FREQ_MIN, AFM_FREQ_MAX, afmFreqValid,
                  canSignals.last_update_afmconv1);
     
-    // 右上: 空気量 (Raw)
+    // 右上: 空気量 (フィルタ適用後)
     drawHUDPanel(startX + panelW + gapX, startY, panelW, panelH,
-                 "AIR FLOW", canSignals.raw_ga, "g/s",
+                 "AIR FLOW", filtered_raw_ga, "g/s",
                  RAW_GA_MIN, RAW_GA_MAX, rawGaValid,
                  canSignals.last_update_afmconv1);
     
